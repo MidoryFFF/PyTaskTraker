@@ -39,12 +39,19 @@ class Day:
         }
 
     def add_event(self, start_time, duration_time, name, description):
-        if (not any(start_time < i < start_time + duration_time for i in self.events.keys())):
+        if (not any(start_time < i < start_time + duration_time for i in self.events.keys()) or
+            start_time in self.events and self.events[start_time] == None):
             self.events[start_time] = {
                 "name": name,
                 "description": description,
                 "end_time": start_time + duration_time
             }
+            return True
+        return False
+
+    def rm_event(self, start_time):
+        if (start_time in self.events):
+            self.events[start_time] = None
             return True
         return False
 

@@ -47,6 +47,12 @@ class Month:
         if (self.days[dayNumber].add_event(eventStartTime, eventDurationTime, eventName, eventDiscription)):
             return True
         return False
+    
+    def rm_event(self, dayNumber, startTime):
+        if (dayNumber in self.days):
+            self.days[dayNumber].rm_event(startTime)
+            return True
+        return False
 
     def get_month(self):
         return self.days
