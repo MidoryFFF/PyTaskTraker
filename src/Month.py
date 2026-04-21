@@ -36,9 +36,8 @@ class Month:
         "december": 12,
     }
 
-    def __init__(self, month, firstDay = 0):
+    def __init__(self, firstDay = 0):
         self.first_day = firstDay
-        self.month_name: int = month
         self.days: Day = {}
 
     def add_event(self, dayNumber, eventStartTime, eventDurationTime, eventName, eventDiscription):

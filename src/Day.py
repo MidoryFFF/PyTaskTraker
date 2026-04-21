@@ -63,7 +63,7 @@ class Day:
         skip_items = 2
         for time, event in self.events.items():
             if (skip_items == 0):
-                stringEvents += f"- {time_to_str(time)}-{time_to_str(event["end_time"])}\n- {event["name"]}\n=> {event["description"]}\n"
+                stringEvents += "- " + time_to_str(time) + "-" + time_to_str(event["end_time"]) + "\n- " + event["name"] + "\n=> " + event["description"]+ "\n"
             else:
                 skip_items -= 1
         return str(stringEvents)
