@@ -4,19 +4,25 @@
 <meta charset="UTF-8">
 <title>Планировщик — календарь</title>
 <style>
-  body{font-family:system-ui,sans-serif;margin:0;background:#f2f4f7;color:#222}
-  header{background:#1f2a44;color:#fff;padding:12px 24px;display:flex;gap:16px;align-items:center}
-  header a{color:#9ecbff;text-decoration:none}
+  body{font-family:system-ui,sans-serif;margin:0;background:#12161c;color:#e2e6ec}
+  header{background:#1c2330;color:#fff;padding:12px 24px;display:flex;gap:16px;align-items:center;border-bottom:1px solid #2c3646}
+  header a{color:#6db3f2;text-decoration:none}
+  header a:hover{color:#9ecbff}
   main{max-width:960px;margin:24px auto;padding:0 16px}
   .bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-  input,button,select{padding:8px;border-radius:6px;border:1px solid #ccc;font-size:14px}
-  button{cursor:pointer;background:#1f2a44;color:#fff}
-  .card{background:#fff;border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-  .event{display:flex;justify-content:space-between;border-left:4px solid #3b6ef6;padding:8px 12px;margin:6px 0;background:#f8faff;border-radius:4px}
-  .event b{color:#1f2a44}
-  .free span{background:#e3f5e9;border-radius:6px;padding:4px 8px;margin-right:6px;display:inline-block;margin-bottom:4px}
-  .muted{color:#777;font-size:13px}
-  h3{margin:4px 0 12px}
+  input,button,select{padding:8px;border-radius:6px;border:1px solid #3a4658;font-size:14px;background:#1c2330;color:#e2e6ec}
+  input::placeholder{color:#7a8698}
+  select option{background:#1c2330;color:#e2e6ec}
+  button{cursor:pointer;background:#2f6fed;color:#fff;border:none}
+  button:hover{background:#3b7cf5}
+  .card{background:#1c2330;border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.4);border:1px solid #2c3646}
+  .event{display:flex;justify-content:space-between;align-items:center;gap:8px;border-left:4px solid #3b6ef6;padding:8px 12px;margin:6px 0;background:#232b3a;border-radius:4px}
+  .event b{color:#8ab8ff}
+  .event button{background:#3a4658;padding:4px 10px}
+  .event button:hover{background:#c05252}
+  .free span{background:#1e3a2b;color:#8fe3ad;border-radius:6px;padding:4px 8px;margin-right:6px;display:inline-block;margin-bottom:4px}
+  .muted{color:#8a94a6;font-size:13px}
+  h3{margin:4px 0 12px;color:#dce3ee}
 </style>
 </head>
 <body>
