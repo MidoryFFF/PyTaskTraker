@@ -1,14 +1,20 @@
-from src.Year import Year
+"""Интеграционный тест: SQL-хранилище + инструменты ИИ."""
+import os
+os.environ["PLANNER_DB"] = os.path.join(os.path.dirname(__file__), "dataBases", "test_run.db")
 
+from src.database import Database
+from Instruments import call_tool
 
-test_year = Year(2026)
-print(test_year.add_event(1, 1, 7*60 + 30, 60, "Что-то", "что-то будет"))
-print(test_year.add_event(1, 1, 9*60 + 30, 60, "Что-то1", "что-то будет1"))
-print(test_year.add_event(1, 1, 8*60 + 30, 120, "Что-то2", "что-то будет2"))
-print(test_year.add_event(4, 1, 7*60 + 30, 60, "Что-то3", "что-то будет3"))
-print(test_year.add_event(4, 1, 9*60 + 30, 60, "Что-то4", "что-то будет4"))
-print(test_year.add_event(10, 1, 8*60 + 30, 120, "Что-то5", "что-то будет5"))
-print(test_year.add_event(4, 5, 8*60 + 30, 120, "Что-то6", "что-то будет6"))
-print(test_year.add_event(1, 5, 8*60 + 30, 120, "Что-то7", "что-то будет7"))
+db = Database()
+assert db.add_event(2026, 1, 1, 7 * 60 + 30, 60, "Что-то", "что-то будет")
+assert db.add_event(2026, 1, 1, 9 * 60 + 30, 60, "Что-то1", "что-то будет1")
+assert db.add_event(2026, 1, 1, 8 * 60 + 30, 120, "пересечение", "") is None  # накладка
+assert len(db.get_events(2026, 1)) == 2
 
-print(test_year)
+r = call_tool("add_event", {"date_": "2026-05-04", "time": "18:30", "duration": "1:30",
+                            "name": "Встреча", "description": "с инструментами"})
+assert "Создано" in r["result"], r
+assert call_tool("free_slots", {"date_": "2026-05-04", "min_duration": 60})["result"] == ["00:00–18:30", "20:00–24:00"]
+assert call_tool("search_events", {"query": "Встреча"})["result"]
+assert call_tool("day_summary", {"date_": "2026-05-04"})["result"]["busy_minutes"] == 90
+print("Все тесты пройдены ✔")

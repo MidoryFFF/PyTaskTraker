@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Планировщик — календарь</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;background:#12161c;color:#e2e6ec}
+  header{background:#1c2330;color:#fff;padding:12px 24px;display:flex;gap:16px;align-items:center;border-bottom:1px solid #2c3646}
+  header a{color:#6db3f2;text-decoration:none}
+  header a:hover{color:#9ecbff}
+  main{max-width:960px;margin:24px auto;padding:0 16px}
+  .bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  input,button,select{padding:8px;border-radius:6px;border:1px solid #3a4658;font-size:14px;background:#1c2330;color:#e2e6ec}
+  input::placeholder{color:#7a8698}
+  select option{background:#1c2330;color:#e2e6ec}
+  button{cursor:pointer;background:#2f6fed;color:#fff;border:none}
+  button:hover{background:#3b7cf5}
+  .card{background:#1c2330;border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.4);border:1px solid #2c3646}
+  .event{display:flex;justify-content:space-between;align-items:center;gap:8px;border-left:4px solid #3b6ef6;padding:8px 12px;margin:6px 0;background:#232b3a;border-radius:4px}
+  .event b{color:#8ab8ff}
+  .event button{background:#3a4658;padding:4px 10px}
+  .event button:hover{background:#c05252}
+  .free span{background:#1e3a2b;color:#8fe3ad;border-radius:6px;padding:4px 8px;margin-right:6px;display:inline-block;margin-bottom:4px}
+  .muted{color:#8a94a6;font-size:13px}
+  h3{margin:4px 0 12px;color:#dce3ee}
+</style>
+</head>
+<body>
+<header>
+  <b>📅 Планировщик</b>
+  <a href="/">Календарь</a>
+  <a href="/ai">ИИ-ассистент</a>
+</header>
+<main>
+  <div class="bar">
+    <input type="date" id="date">
+    <button onclick="loadDay()">Показать день</button>
+    <button onclick="weekView()">Неделя</button>
+    <button onclick="monthView()">Месяц</button>
+  </div>
+
+  <div class="card">
+    <h3>Новое событие</h3>
+    <div class="bar">
+      <input type="date" id="n_date"><input type="time" id="n_time" value="09:00">
+      <select id="n_dur"><option value="30">30 мин</option><option value="60" selected>1 час</option>
+      <option value="90">1.5 часа</option><option value="120">2 часа</option></select>
+      <input id="n_name" placeholder="Название">
+      <input id="n_desc" placeholder="Описание">
+      <button onclick="addEvent()">Добавить</button>
+    </div>
+    <div id="add_msg" class="muted"></div>
+  </div>
+
+  <div class="card">
+    <h3 id="list_title">События</h3>
+    <div id="events"></div>
+    <div class="free" id="free"></div>
+  </div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const iso=d=>d.toISOString().slice(0,10);
+const pad=n=>String(n).padStart(2,'0');
+const fmt=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+$('#date').value=iso(new Date()); $('#n_date').value=iso(new Date());
+
+async function api(url,opt){const r=await fetch(url,opt);return r.json();}
+function render(events){
+  $('#events').innerHTML = events.length? events.map(e=>`
+    <div class="event"><span><b>[${e.id}] ${e.year_number}-${pad(e.month_number)}-${pad(e.day_number)}</b>
+     ${fmt(e.start_time)}–${fmt(e.start_time+e.duration_time)} «${e.name}» <span class="muted">${e.description||''}</span></span>
+     <button onclick="del(${e.id})">✕</button></div>`).join('')
+   : '<p class="muted">Нет событий.</p>';
+}
+async function loadDay(){
+  const d=$('#date').value;
+  $('#list_title').textContent='День '+d;
+  render(await api('/api/events?date_='+d));
+  const evs=await api('/api/events?year='+d.slice(0,4)+'&month='+d.slice(5,7)+'&day='+d.slice(8,10));
+  render(evs);
+  const s=await api('/api/day/'+d);
+  $('#free').innerHTML='<b>Занято:</b> '+(s.summary.busy_minutes)+' мин. <b>Свободные слоты ≥30м:</b> '+
+    s.free.map(f=>'<span>'+f+'</span>').join('');
+}
+async function weekView(){
+  const start=new Date($('#date').value); const out=[];
+  for(let i=0;i<7;i++){const d=new Date(start);d.setDate(start.getDate()+i);out.push(iso(d));}
+  const all=await api('/api/events');
+  render(all.filter(e=>out.includes(`${e.year_number}-${pad(e.month_number)}-${pad(e.day_number)}`)));
+  $('#list_title').textContent='Неделя с '+out[0]; $('#free').innerHTML='';
+}
+async function monthView(){
+  const d=$('#date').value;
+  const all=await api('/api/events?year='+d.slice(0,4)+'&month='+d.slice(5,7));
+  render(all); $('#list_title').textContent='Месяц '+d.slice(0,7); $('#free').innerHTML='';
+}
+async function addEvent(){
+  const body={date:$('#n_date').value,time:$('#n_time').value,duration:$('#n_dur').value,
+              name:$('#n_name').value||'Событие',description:$('#n_desc').value};
+  const r=await fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  $('#add_msg').textContent=j.error?('Ошибка: '+j.error):('Создано id='+j.id);
+  loadDay();
+}
+async function del(id){await fetch('/api/events/'+id,{method:'DELETE'});loadDay();}
+loadDay();
+</script>
+</body>
+</html>
